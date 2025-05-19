@@ -1,8 +1,6 @@
 import streamlit as st
 import folium
-import pandas as pd
 import requests
-import matplotlib.pyplot as plt
 from geopy.geocoders import Nominatim
 from streamlit_folium import st_folium
 
@@ -57,7 +55,7 @@ colors = {"Червоний": "red", "Зелений": "green", "Рожевий"
 #Анімований заголовок
 st.markdown(f"<div class='title'>Інтерактивна карта районів</div>", unsafe_allow_html=True)
 
-# Інтерактивне введення районів
+#Інтерактивне введення районів
 district_input = st.text_area("📍 Введіть райони через кому", "Івано-Франківський район, Калуський район, Коломийський район")
 districts = [d.strip() for d in district_input.split(",")]
 
@@ -66,44 +64,21 @@ selected_category = st.selectbox("📌 Оберіть категорію", categ
 selected_color_name = st.selectbox("🖌️ Оберіть колір маркерів", list(colors.keys()))
 selected_color = colors[selected_color_name]  # Перетворення у формат Folium
 
-#Створення базової карти
-m = folium.Map(location=[48.9226, 24.7103], zoom_start=8)
-cat_groups = {c: folium.FeatureGroup(c).add_to(m) for c in categories}
-folium.LayerControl().add_to(m)
+#Кнопка пошуку
+if st.button("🔎 Пошук"):
+    # 🗺️ Створення базової карти
+    m = folium.Map(location=[48.9226, 24.7103], zoom_start=8)
+    cat_groups = {c: folium.FeatureGroup(c).add_to(m) for c in categories}
+    folium.LayerControl().add_to(m)
 
-#Додавання точок
-for district in districts:
-    coords = get_coordinates(district)
-    if coords:
-        folium.Marker(location=coords, popup=district, icon=folium.Icon(color=selected_color)).add_to(cat_groups[selected_category])
+    #Додавання точок
+    for district in districts:
+        coords = get_coordinates(district)
+        if coords:
+            folium.Marker(location=coords, popup=district, icon=folium.Icon(color=selected_color)).add_to(cat_groups[selected_category])
 
-#Аналіз населення
-population_data = pd.DataFrame({
-    "Регіон": ["Івано-Франківський район", "Калуський район", "Коломийський район"],
-    "Населення": [230000, 150000, 180000]
-})
-
-selected_region = st.selectbox("📈 Оберіть регіон для аналізу", population_data["Регіон"])
-region_population = population_data[population_data["Регіон"] == selected_region]["Населення"].values[0]
-st.write(f"👥 Населення регіону: {region_population}")
-
-#Графік населення
-fig, ax = plt.subplots()
-ax.bar(population_data["Регіон"], population_data["Населення"], color="blue")
-ax.set_ylabel("Населення")
-ax.set_title("Населення регіонів")
-st.pyplot(fig)
-
-#Курс валют
-response = requests.get("https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?json")
-exchange_rates = response.json()
-usd_rate = next(item for item in exchange_rates if item["cc"] == "USD")["rate"]
-eur_rate = next(item for item in exchange_rates if item["cc"] == "EUR")["rate"]
-st.write(f"💰 Курс USD: {usd_rate} грн")
-st.write(f"💶 Курс EUR: {eur_rate} грн")
-
-#Відображення карти у Streamlit
-st_folium(m, width=700, height=500)
+    #Відображення карти у Streamlit
+    st_folium(m, width=700, height=500)
 
 #Підпис автора
 st.markdown("<div style='text-align: center; font-size: 20px; font-weight: bold; margin-top: 20px;'>Автор: Шаблінський С.І.</div>", unsafe_allow_html=True)
