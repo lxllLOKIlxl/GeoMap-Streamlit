@@ -2,3 +2,6 @@ streamlit
 geopy
 folium
 streamlit-folium
+pandas
+matplotlib
+requests
